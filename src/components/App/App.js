@@ -11,6 +11,7 @@ function App() {
   const [isAddPlacePopupOpen, setIsAddPlacePopupOpen] = React.useState(false);
   const [isEditAvatarPopupOpen, setIsEditAvatarPopupOpen] = React.useState(false);
   const [isEditProfilePopupOpen, setIsEditProfilePopupOpen] = React.useState(false);
+  const [selectedCard, setSelectedCard] = React.useState({ cardOpened: false, cardLink: '', cardName: '' });
 
 
   const handleEditAvatarClick = () => {
@@ -33,8 +34,6 @@ function App() {
 
   }
 
-  const [selectedCard, setSelectedCard] = React.useState({ cardOpened: false, cardLink: '', cardName: '' });
-
   const handleCardClick = (link, name) => {
     setSelectedCard({ ...selectedCard, cardOpened: true, cardLink: link, cardName: name });
   }
@@ -44,17 +43,17 @@ function App() {
 
     <div className="page">
 
-      <Header></Header>
+      <Header/>
 
       <Main onEditAvatar={handleEditAvatarClick} onAddPlace={handleAddPlaceClick} onEditProfile={handleEditProfileClick}
-        cardClick={handleCardClick} ></Main>
+        onCardClick={handleCardClick} ></Main>
 
-      <Footer></Footer>
+      <Footer/>
 
       <ImagePopup card={selectedCard.cardOpened} link={selectedCard.cardLink} name={selectedCard.cardName} onClose={closeAllPopups} ></ImagePopup>
 
       <PopupWithForm name="edit" title="Редактировать профиль" isOpen={isEditProfilePopupOpen ? 'popup_opened' : ''}
-        onClose={closeAllPopups} >
+        onClose={closeAllPopups} submitButtonText ="Сохранить" >
         <fieldset className="popup__field-container">
           <input id="user-name" name="name" type="text" className="popup__field popup__field_type_name" placeholder="Имя"
             required minLength="2" maxLength="40" />
@@ -63,11 +62,11 @@ function App() {
             required minLength="2" maxLength="200" placeholder="Описание" />
           <span id="user-description-error" className="popup__error-message popup__error-message_visible"></span>
         </fieldset>
-        <button type="submit" className="popup__submit-button" aria-label="Сохранить">Сохранить</button>
       </PopupWithForm>
 
 
-      <PopupWithForm name="add-card" title="Новое место" isOpen={isAddPlacePopupOpen ? 'popup_opened' : ''} onClose={closeAllPopups}>
+      <PopupWithForm name="add-card" title="Новое место" isOpen={isAddPlacePopupOpen ? 'popup_opened' : ''}
+      onClose={closeAllPopups} submitButtonText ="Сохранить">
         <fieldset className="popup__field-container">
           <input id="card-name" name="name" type="text" className="popup__field popup__field_type_card-name"
             placeholder="Название" required minLength="2" maxLength="30" />
@@ -76,23 +75,20 @@ function App() {
             placeholder="Ссылка на картинку" required />
           <span id="card-description-error" className="popup__error-message popup__error-message_visible"></span>
         </fieldset>
-        <button type="submit" className="popup__submit-button" aria-label="Сохранить">Сохранить</button>
       </PopupWithForm>
 
 
-      <PopupWithForm name="delete-submit" title="Вы уверены?">
-        <button type="submit" className="popup__submit-button" aria-label="Создать">Да</button>
-      </PopupWithForm>
+      <PopupWithForm name="delete-submit" title="Вы уверены?" submitButtonText ="Да"></PopupWithForm>
 
 
 
-      <PopupWithForm name="change-avatar" title="Обновить аватар" isOpen={isEditAvatarPopupOpen ? 'popup_opened' : ''} onClose={closeAllPopups}>
+      <PopupWithForm name="change-avatar" title="Обновить аватар" isOpen={isEditAvatarPopupOpen ? 'popup_opened' : ''}
+      onClose={closeAllPopups} submitButtonText ="Сохранить" >
         <fieldset className="popup__field-container">
           <input id="avatar-link" name="link" type="url" className="popup__field popup__field_type_change-avatar"
             placeholder="Ссылка на картинку" required />
           <span id="avatar-link-error" className="popup__error-message popup__error-message_visible"></span>
         </fieldset>
-        <button type="submit" className="popup__submit-button" aria-label="Создать">Сохранить</button>
       </PopupWithForm>
 
     </div>

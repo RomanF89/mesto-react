@@ -7,6 +7,7 @@ function Main(props) {
   const [userName, setUserName] = React.useState('');
   const [userDescription, setUserDescription] = React.useState('');
   const [userAvatar, setUserAvatar] = React.useState('');
+  const [cards, setCards] = React.useState([]);
 
   const getProfileInfo = () => {
     api.getProfile()
@@ -20,13 +21,6 @@ function Main(props) {
       })
   }
 
-  React.useEffect(() => {
-    getProfileInfo()
-  }, [])
-
-
-  const [cards, setCards] = React.useState([]);
-
   const getCardsFromRequest = () => {
     api.getCards()
       .then((res) => {
@@ -38,10 +32,16 @@ function Main(props) {
   }
 
   React.useEffect(() => {
+    getProfileInfo()
+  }, [])
+
+  React.useEffect(() => {
     getCardsFromRequest()
   }, [])
 
-  return <main className="content">
+  return (
+
+  <main className="content">
 
     <section className="profile">
       <div onClick={props.onEditAvatar} className="profile__avatar-container">
@@ -63,12 +63,12 @@ function Main(props) {
     <section className="elements">
       {
         cards.map(item => (<Card link={item.link} likes={item.likes} name={item.name} key={item._id}
-          onCardClick={props.cardClick} />)
+          onCardClick={props.onCardClick} />)
         )
       }
     </section>
 
-  </main>
+  </main>)
 }
 
 export default Main;
