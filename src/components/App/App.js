@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../Header/Header';
 import Main from '../Main/Main';
 import Footer from '../Footer/Footer';
@@ -13,12 +13,12 @@ import AddPlacePopup from '../AddPlacePopup/AddPlacePopup';
 
 function App() {
 
-  const [isAddPlacePopupOpen, setIsAddPlacePopupOpen] = React.useState(false);
-  const [isEditAvatarPopupOpen, setIsEditAvatarPopupOpen] = React.useState(false);
-  const [isEditProfilePopupOpen, setIsEditProfilePopupOpen] = React.useState(false);
-  const [selectedCard, setSelectedCard] = React.useState({ cardOpened: false, cardLink: '', cardName: '' });
-  const [currentUser, setCurrentUser] = React.useState({});
-  const [cards, setCards] = React.useState([]);
+  const [isAddPlacePopupOpen, setIsAddPlacePopupOpen] = useState(false);
+  const [isEditAvatarPopupOpen, setIsEditAvatarPopupOpen] = useState(false);
+  const [isEditProfilePopupOpen, setIsEditProfilePopupOpen] = useState(false);
+  const [selectedCard, setSelectedCard] = useState({ cardOpened: false, cardLink: '', cardName: '' });
+  const [currentUser, setCurrentUser] = useState({});
+  const [cards, setCards] = useState([]);
 
   // Функции загрузки карточек с API и данных о пользователе
 
@@ -144,12 +144,23 @@ function App() {
 
       <Header/>
 
-      <Main onEditAvatar={handleEditAvatarClick} onAddPlace={handleAddPlaceClick} onEditProfile={handleEditProfileClick}
-        onCardClick={handleCardClick} cards={cards} onCardLike={handleCardLike} onCardDelete={handleDeleteCard} ></Main>
+      <Main
+        onEditAvatar={handleEditAvatarClick}
+        onAddPlace={handleAddPlaceClick}
+        onEditProfile={handleEditProfileClick}
+        onCardClick={handleCardClick}
+        cards={cards} onCardLike={handleCardLike}
+        onCardDelete={handleDeleteCard} >
+      </Main>
 
       <Footer/>
 
-      <ImagePopup card={selectedCard.cardOpened} link={selectedCard.cardLink} name={selectedCard.cardName} onClose={closeAllPopups} ></ImagePopup>
+      <ImagePopup
+        card={selectedCard.cardOpened}
+        link={selectedCard.cardLink}
+        name={selectedCard.cardName}
+        onClose={closeAllPopups} >
+      </ImagePopup>
 
       <EditProfilePopup isOpen={isEditProfilePopupOpen} onClose={closeAllPopups} onUpdateUser={handleUpdateUser} />
 

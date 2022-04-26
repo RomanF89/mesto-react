@@ -1,14 +1,14 @@
-import React from "react";
+import React, { useRef } from 'react';
 import PopupWithForm from "../PopupWithForm/PopupWithForm";
 
-function AddPlacePopup(props) {
+function AddPlacePopup({isOpen, onClose, onAddPlace}) {
 
-  const cardNameRef = React.useRef('');
-  const cardLinkRef = React.useRef('');
+  const cardNameRef = useRef('');
+  const cardLinkRef = useRef('');
 
   function handleSubmit(e) {
     e.preventDefault();
-    props.onAddPlace({
+    onAddPlace({
       name: cardNameRef.current.value,
       link: cardLinkRef.current.value
     });
@@ -16,12 +16,12 @@ function AddPlacePopup(props) {
 
   React.useEffect(() => {
     cardNameRef.current.form.reset();
-  }, [props.isOpen]);
+  }, [isOpen]);
 
   return (
 
-    <PopupWithForm onSubmit={handleSubmit} name="add-card" title="Новое место" isOpen={props.isOpen ? 'popup_opened' : ''}
-      onClose={props.onClose} submitButtonText="Сохранить">
+    <PopupWithForm onSubmit={handleSubmit} name="add-card" title="Новое место" isOpen={isOpen}
+      onClose={onClose} submitButtonText="Сохранить">
       <fieldset className="popup__field-container">
         <input id="card-name" name="name" ref={cardNameRef} type="text" className="popup__field popup__field_type_card-name"
           placeholder="Название" required minLength="2" maxLength="30" />
