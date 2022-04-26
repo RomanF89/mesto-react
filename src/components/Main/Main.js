@@ -5,22 +5,7 @@ import { CurrentUserContext } from "../../contexts/CurrentUserContext";
 
 function Main({onEditAvatar, onAddPlace, onEditProfile, onCardClick, cards, onCardDelete, onCardLike }) {
 
-  const [userName, setUserName] = useState('');
-  const [userDescription, setUserDescription] = useState('');
-  const [userAvatar, setUserAvatar] = useState('');
   const currentUserInfo = useContext(CurrentUserContext);
-
-  const getProfileInfo = () => {
-    setUserName(currentUserInfo.name);
-    setUserDescription(currentUserInfo.about);
-    setUserAvatar(currentUserInfo.avatar);
-  }
-
-  React.useEffect(() => {
-    getProfileInfo()
-  }, [currentUserInfo])
-
-
 
   return (
 
@@ -28,7 +13,7 @@ function Main({onEditAvatar, onAddPlace, onEditProfile, onCardClick, cards, onCa
 
       <section className="profile">
         <div onClick={onEditAvatar} className="profile__avatar-container">
-          <img className="profile__avatar" src={userAvatar} alt="Аватар профиля" />
+          <img className="profile__avatar" src={currentUserInfo.avatar} alt="Аватар профиля" />
           <div className="profile__overlay">
           </div>
         </div>
