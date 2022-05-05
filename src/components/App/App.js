@@ -6,9 +6,19 @@ import PopupWithForm from '../PopupWithForm/PopupWithForm';
 import ImagePopup from '../ImagePopup/ImagePopup';
 import EditProfilePopup from '../EditProfilePopup/EditProfilePopup';
 import EditAvatarPopup from '../AvatarEditPopup/EditAvatarPopup';
-import {api} from '../../utils/Api';
+import { api } from '../../utils/Api';
 import { CurrentUserContext } from '../../contexts/CurrentUserContext';
 import AddPlacePopup from '../AddPlacePopup/AddPlacePopup';
+import { Route, Switch, Redirect, useHistory } from 'react-router-dom';
+import ProtectedRoute from '../ProtectedRoute/ProtectedRoute';
+import Login from '../Login/Login';
+import Register from '../../Register/Register';
+import * as Authentication from '../../utils/Authentication';
+import InfoTooltip from '../InfoTooltip/InfoTooltip';
+import okImage from '../../images/Ok.svg';
+import falseImage from '../../images/False.svg'
+
+
 
 
 function App() {
@@ -19,6 +29,64 @@ function App() {
   const [selectedCard, setSelectedCard] = useState({ cardOpened: false, cardLink: '', cardName: '' });
   const [currentUser, setCurrentUser] = useState({});
   const [cards, setCards] = useState([]);
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [currentInfoTooltip, setCurrentInfoTooltip] = useState({ isOpen: false, message: '', infoImage: [] });
+  const [userData, setUserData] = useState('');
+
+
+  const history = useHistory();
+
+  // Регистрация и авторизация пользователя
+
+  const tokenCheck = () => {
+    if (localStorage.getItem('token')) {
+      let token = localStorage.getItem('token');
+      Authentication.getContent(token).then((res) => {
+        if (res) {
+          setUserData({
+            email: res.data.email
+          });
+          setLoggedIn(true);
+        }
+      });
+    }
+  }
+
+  const handleRegister = (email, password) => {
+    return Authentication
+      .register(email, password)
+      .then((res) => {
+        setCurrentInfoTooltip({ isOpen: true, message: 'Вы успешно зарегистрировались!', infoImage: okImage })
+        history.push('/login')
+      })
+      .catch((err) => {
+        console.log(err)
+        setCurrentInfoTooltip({ isOpen: true, message: 'Что-то пошло не так! Попробуйте еще раз.', infoImage: falseImage })
+      });
+  }
+
+  const handleLogin = (email, password) => {
+    return Authentication
+      .authorize(email, password)
+      .then((data) => {
+        console.log(data.token)
+        if (!data.token) {
+          return;
+        }
+        localStorage.setItem('token', data.token);
+        setLoggedIn(true)
+        history.push('/')
+      })
+      .catch(err => {
+        console.log(err)
+      })
+      .finally(() => { tokenCheck() })
+  }
+
+  const handleSignOut = () => {
+    localStorage.removeItem('token');
+    setLoggedIn(false);
+  }
 
   // Функции загрузки карточек с API и данных о пользователе
 
@@ -50,13 +118,13 @@ function App() {
 
     // Отправляем запрос в API и получаем обновлённые данные карточки
     api.changeLikeCardStatus(card._id, !isLiked)
-    .then(newCard => {
-      setCards(state => state.map((c) => c._id === card._id ? newCard : c));
-    })
-    .catch(err => {
-      console.log(err)
-    });
-}
+      .then(newCard => {
+        setCards(state => state.map((c) => c._id === card._id ? newCard : c));
+      })
+      .catch(err => {
+        console.log(err)
+      });
+  }
 
   function handleDeleteCard(card) {
     api.deleteCard(card._id)
@@ -66,7 +134,7 @@ function App() {
       })
   }
 
-// Функции Сабмитов форм
+  // Функции Сабмитов форм
 
   const handleUpdateUser = (UserData) => {
     api.editProfile(UserData.name, UserData.about)
@@ -92,8 +160,8 @@ function App() {
 
   function handleAddPlaceSubmit(cardData) {
     api.addCard(cardData.name, cardData.link)
-      .then(newCard =>
-        {setCards([newCard, ...cards])
+      .then(newCard => {
+        setCards([newCard, ...cards])
         closeAllPopups();
       })
       .catch(err => {
@@ -122,6 +190,7 @@ function App() {
   // Закрытие попапов
 
   const closeAllPopups = () => {
+    setCurrentInfoTooltip({ isOpen: false })
     setIsAddPlacePopupOpen(false);
     setIsEditProfilePopupOpen(false);
     setIsEditAvatarPopupOpen(false);
@@ -129,48 +198,84 @@ function App() {
   }
 
 
-  React.useEffect(() => {
+  useEffect(() => {
     getUserInfo()
   }, [])
 
-  React.useEffect(() => {
+  useEffect(() => {
     getCardsFromRequest()
   }, [])
 
+  useEffect(() => {
+    tokenCheck();
+  }, []);
+
+
+  useEffect(() => {
+    if (loggedIn) {
+      history.push("/");
+      return;
+    }
+    history.push('/sign-up');
+  }, [loggedIn]);
+
+
+
   return (
-
     <CurrentUserContext.Provider value={currentUser}>
-    <div className="page">
+      <div className="page">
 
-      <Header/>
+        <Switch>
+          <ProtectedRoute loggedIn={loggedIn} exact path="/">
+            <Header handleSignOut={handleSignOut} headerCaptionText='Выйти' userData={userData.email} />
+            <Main
+              onEditAvatar={handleEditAvatarClick}
+              onAddPlace={handleAddPlaceClick}
+              onEditProfile={handleEditProfileClick}
+              onCardClick={handleCardClick}
+              cards={cards} onCardLike={handleCardLike}
+              onCardDelete={handleDeleteCard} >
+            </Main>
+            <Footer />
+          </ProtectedRoute>
 
-      <Main
-        onEditAvatar={handleEditAvatarClick}
-        onAddPlace={handleAddPlaceClick}
-        onEditProfile={handleEditProfileClick}
-        onCardClick={handleCardClick}
-        cards={cards} onCardLike={handleCardLike}
-        onCardDelete={handleDeleteCard} >
-      </Main>
+          <Route path="/sign-up">
+            <Header headerCaptionLink="/sign-in" headerCaptionText="Войти" />
+            <div className="registerContainer">
+              <Register handleRegister={handleRegister} />
+            </div>
+          </Route>
 
-      <Footer/>
+          <Route path="/sign-in">
+            <Header headerCaptionLink="/sign-up" headerCaptionText="Регистрация" />
+            <div className="loginContainer">
+              <Login handleLogin={handleLogin} />
+            </div>
+          </Route>
 
-      <ImagePopup
-        card={selectedCard.cardOpened}
-        link={selectedCard.cardLink}
-        name={selectedCard.cardName}
-        onClose={closeAllPopups} >
-      </ImagePopup>
+          <Route>
+            {loggedIn ? <Redirect to="/" /> : <Redirect to="/sign-in" />}
+          </Route>
+        </Switch>
 
-      <EditProfilePopup isOpen={isEditProfilePopupOpen} onClose={closeAllPopups} onUpdateUser={handleUpdateUser} />
+        <InfoTooltip currentInfoTooltip={currentInfoTooltip} onClose={closeAllPopups} />
 
-      <AddPlacePopup isOpen={isAddPlacePopupOpen} onClose={closeAllPopups} onAddPlace={handleAddPlaceSubmit} />
+        <ImagePopup
+          card={selectedCard.cardOpened}
+          link={selectedCard.cardLink}
+          name={selectedCard.cardName}
+          onClose={closeAllPopups} >
+        </ImagePopup>
 
-      <PopupWithForm name="delete-submit" title="Вы уверены?" submitButtonText ="Да"></PopupWithForm>
+        <EditProfilePopup isOpen={isEditProfilePopupOpen} onClose={closeAllPopups} onUpdateUser={handleUpdateUser} />
 
-      <EditAvatarPopup isOpen={isEditAvatarPopupOpen} onClose={closeAllPopups} onUpdateAvatar={handleUpdateAvatar} />
+        <AddPlacePopup isOpen={isAddPlacePopupOpen} onClose={closeAllPopups} onAddPlace={handleAddPlaceSubmit} />
 
-    </div>
+        <PopupWithForm name="delete-submit" title="Вы уверены?" submitButtonText="Да"></PopupWithForm>
+
+        <EditAvatarPopup isOpen={isEditAvatarPopupOpen} onClose={closeAllPopups} onUpdateAvatar={handleUpdateAvatar} />
+
+      </div>
 
     </CurrentUserContext.Provider>
   );
